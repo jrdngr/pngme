@@ -56,7 +56,8 @@ pub struct Chunk {
 
 impl Chunk {
     pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
-        let crc = 0;
+        let crc_data: Vec<u8> = chunk_type.bytes().iter().cloned().chain(data.iter().cloned()).collect();
+        let crc = crc::crc32::checksum_ieee(&crc_data);
 
         Self {
             length: data.len() as u32,
