@@ -13,11 +13,14 @@ pub fn encode(args: EncodeArgs) -> Result<()> {
 
     png.insert_chunk(Chunk::new(chunk_type, data));
 
-    let file_name = "out.png";
-    let mut result_file = fs::File::create(&file_name)?;
-    result_file.write_all(&png.as_bytes())?;
+    let file_path = match args.out {
+        Some(path) => path,
+        None => args.file,
+    };
 
-    println!("Wrote message to: {}", &file_name);
+    fs::write(&file_path, &png.as_bytes())?;
+
+    println!("Wrote message to: {:?}", &file_path);
 
     Ok(())
 }
