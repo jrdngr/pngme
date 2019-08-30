@@ -53,6 +53,12 @@ fn main() -> Result<()> {
 
             println!("Removed message from: {:?}", &file);
         },
+        PngMeArgs::Print{file} => {
+            let bytes = fs::read(&file).unwrap();
+            let png = Png::from_bytes(&bytes).unwrap();
+
+            println!("{}", png);
+        }
     }
 
     Ok(())

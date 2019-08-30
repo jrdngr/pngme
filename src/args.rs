@@ -24,4 +24,8 @@ pub enum PngMeArgs {
         file: PathBuf,
         chunk: String,
     },
+    #[structopt(name = "print")]
+    Print {
+        file: PathBuf,
+    }
 }
