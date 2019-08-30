@@ -2,6 +2,8 @@ use std::fmt;
 
 use crate::Error;
 
+pub type Png = Vec<Chunk>;
+
 #[derive(Debug, Clone)]
 pub struct Chunk {
     length: u32,
