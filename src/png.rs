@@ -42,6 +42,10 @@ impl Png {
         }
     }
 
+    pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk> {
+        unimplemented!()
+    }
+
     pub fn chunks(&self) -> &[Chunk] {
         &self.chunks
     }
