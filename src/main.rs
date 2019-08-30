@@ -1,8 +1,13 @@
 use structopt::StructOpt;
 
 mod args;
+mod error;
+mod png;
+mod encode;
+mod decode;
+mod remove;
 
-type Error = Box<dyn std::error::Error>;
+use crate::error::Error;
 
 fn main() -> Result<(), Error> {
     let args = args::PngMeArgs::from_args();
