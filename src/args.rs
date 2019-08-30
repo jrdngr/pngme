@@ -6,26 +6,38 @@ use structopt::StructOpt;
 #[structopt(name = "pngme")]
 pub enum PngMeArgs {
     #[structopt(name = "encode")]
-    Encode {
-        #[structopt(parse(from_os_str))]
-        file: PathBuf,
-        chunk: String,
-        message: String,
-        #[structopt(short = "o", long = "out", parse(from_os_str))]
-        out: Option<PathBuf>,
-    },
+    Encode(EncodeArgs),
     #[structopt(name = "decode")]
-    Decode {
-        file: PathBuf,
-        chunk: String,
-    },
+    Decode(DecodeArgs),
     #[structopt(name = "remove")]
-    Remove {
-        file: PathBuf,
-        chunk: String,
-    },
+    Remove(RemoveArgs),
     #[structopt(name = "print")]
-    Print {
-        file: PathBuf,
-    }
+    PrintChunks(PrintArgs),
+}
+
+#[derive(StructOpt, Debug)]
+pub struct EncodeArgs {
+    #[structopt(parse(from_os_str))]
+    pub file: PathBuf,
+    pub chunk: String,
+    pub message: String,
+    #[structopt(short = "o", long = "out", parse(from_os_str))]
+    pub out: Option<PathBuf>,
+}
+
+#[derive(StructOpt, Debug)]
+pub struct DecodeArgs {
+    pub file: PathBuf,
+    pub chunk: String,
+}
+
+#[derive(StructOpt, Debug)]
+pub struct RemoveArgs {
+    pub file: PathBuf,
+    pub chunk: String,
+}
+
+#[derive(StructOpt, Debug)]
+pub struct PrintArgs {
+    pub file: PathBuf,
 }
