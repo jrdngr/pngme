@@ -5,4 +5,4 @@ authors = ["picklenerd <jordan.t.grace@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-structopt = "0.2.18"
+structopt = "0.3"
