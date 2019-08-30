@@ -17,7 +17,7 @@ impl Png {
         let mut header: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
         let mut chunks = Vec::new();
 
-        reader.read_exact(&mut header).unwrap();
+        reader.read_exact(&mut header)?;
 
         let mut length_buffer: [u8; 4] = [0, 0, 0, 0];
         while let Ok(()) = reader.read_exact(&mut length_buffer) {
@@ -25,9 +25,9 @@ impl Png {
 
             let chunk_length = (length + 8) as usize;
             let mut chunk_data: Vec<u8> = vec![0; chunk_length];
-            reader.read_exact(&mut chunk_data).unwrap();
+            reader.read_exact(&mut chunk_data)?;
             
-            let chunk = Chunk::from_bytes(length, &chunk_data).unwrap();
+            let chunk = Chunk::from_bytes(length, &chunk_data)?;
             chunks.push(chunk);
         }
 
@@ -38,7 +38,7 @@ impl Png {
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let bytes = fs::read(path).unwrap();
+        let bytes = fs::read(path)?;
         Ok(Self::from_bytes(&bytes)?)
     }
 
@@ -139,13 +139,13 @@ impl Chunk {
             let mut reader = BufReader::new(bytes);
             let mut buffer: [u8; 4] = [0, 0, 0, 0];
 
-            reader.read_exact(&mut buffer).expect("Failed to read chunk type");
+            reader.read_exact(&mut buffer)?;
             let chunk_type = ChunkType::from_bytes(buffer);
 
             let mut data: Vec<u8> =  vec![0; data_length as usize];
-            reader.read_exact(&mut data).expect("Failed to read chunk data");
+            reader.read_exact(&mut data)?;
 
-            reader.read_exact(&mut buffer).expect("Failed to read crc");
+            reader.read_exact(&mut buffer)?;
             let crc = u32::from_be_bytes(buffer);
 
             Ok(Self { length: data_length, chunk_type, data, crc })
@@ -233,7 +233,7 @@ impl ChunkType {
 
 impl fmt::Display for ChunkType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This is already validated as ASCII"))
+        write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This should already be validated as ASCII"))
     }
 }
 

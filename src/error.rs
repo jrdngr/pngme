@@ -1,4 +1,5 @@
 use std::fmt;
+use std::error::Error as StdError;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -21,12 +22,24 @@ impl fmt::Display for Error {
     }
 }
 
-impl std::error::Error for Error {
+impl StdError for Error {
     fn description(&self) -> &str {
         "Something went wrong. Oh no!"
     }
 
-    fn cause(&self) -> Option<&dyn std::error::Error> {
+    fn cause(&self) -> Option<&dyn StdError> {
         None
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Self::new(error.description())
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Self {
+        Self::new(error.description())
     }
 }
