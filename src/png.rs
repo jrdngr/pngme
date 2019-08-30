@@ -55,6 +55,17 @@ pub struct Chunk {
 }
 
 impl Chunk {
+    pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
+        let crc = 0;
+
+        Self {
+            length: data.len() as u32,
+            chunk_type,
+            data,
+            crc,
+        }
+    }
+
     pub fn from_bytes(data_length: u32, bytes: &[u8]) -> Result<Self> {
         if bytes.len() < 8 {
             Err(Error::new("Invalid chunk"))
