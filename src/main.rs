@@ -6,7 +6,6 @@ mod png;
 mod encode;
 mod decode;
 mod remove;
-mod utils;
 
 pub use crate::error::{Error, Result};
 

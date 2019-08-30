@@ -1,11 +1,12 @@
 use std::fmt;
+use std::io::{Read, BufReader};
 
 use crate::{Error, Result};
-use crate::utils::{four_bytes, u32_from_slice_range};
 
 #[derive(Debug)]
 pub struct Png {
-    chunk: Vec<Chunk>,
+    header: [u8; 8],
+    chunks: Vec<Chunk>,
 }
 
 impl Png {
@@ -27,13 +28,20 @@ impl Chunk {
         if bytes.len() < 12 {
             Err(Error::new("Invalid chunk"))
         } else {
-            let length = u32_from_slice_range(bytes, 0..4)?;
-            let chunk_type = ChunkType::from_bytes(four_bytes(bytes, 5..8)?);
-            let data = bytes[8..length as usize].to_vec();
+            let mut reader = BufReader::new(bytes);
+            let mut buffer: [u8; 4] = [0, 0, 0, 0];
 
-            let crc_start = 8 + length as usize;
-            let crc_end = crc_start + 4;
-            let crc = u32_from_slice_range(bytes, crc_start..crc_end)?;
+            reader.read_exact(&mut buffer).expect("Failed to read chunk length");
+            let length = u32::from_be_bytes(buffer);
+
+            reader.read_exact(&mut buffer).expect("Failed to read chunk type");
+            let chunk_type = ChunkType::from_bytes(buffer);
+
+            let mut data = Vec::with_capacity(bytes.len() - 12);
+            reader.read_exact(&mut data).expect("Failed to read chunk data");
+
+            reader.read_exact(&mut buffer).expect("Failed to read crc");
+            let crc = u32::from_be_bytes(buffer);
 
             Ok(Self { length, chunk_type, data, crc })
         }
