@@ -11,7 +11,38 @@ pub struct Png {
 
 impl Png {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        unimplemented!()
+        let mut reader = BufReader::new(bytes);
+        let mut header: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+        let mut chunks = Vec::new();
+
+        reader.read_exact(&mut header).unwrap();
+
+        let mut length_buffer: [u8; 4] = [0, 0, 0, 0];
+        while let Ok(()) = reader.read_exact(&mut length_buffer) {
+            let length = u32::from_be_bytes(length_buffer);
+
+            let chunk_length = (length + 8) as usize;
+            let mut chunk_data: Vec<u8> = vec![0; chunk_length];
+            reader.read_exact(&mut chunk_data).unwrap();
+            
+            let chunk = Chunk::from_bytes(length, &chunk_data).unwrap();
+            chunks.push(chunk);
+        }
+
+        Ok(Self {
+            header,
+            chunks,
+        })
+    }
+}
+
+impl fmt::Display for Png {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Header: {:?}", self.header)?;
+        for chunk in &self.chunks {
+            writeln!(f, "{}", chunk)?;
+        }
+        Ok(())
     }
 }
 
@@ -24,26 +55,23 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() < 12 {
+    pub fn from_bytes(data_length: u32, bytes: &[u8]) -> Result<Self> {
+        if bytes.len() < 8 {
             Err(Error::new("Invalid chunk"))
         } else {
             let mut reader = BufReader::new(bytes);
             let mut buffer: [u8; 4] = [0, 0, 0, 0];
 
-            reader.read_exact(&mut buffer).expect("Failed to read chunk length");
-            let length = u32::from_be_bytes(buffer);
-
             reader.read_exact(&mut buffer).expect("Failed to read chunk type");
             let chunk_type = ChunkType::from_bytes(buffer);
 
-            let mut data = Vec::with_capacity(bytes.len() - 12);
+            let mut data: Vec<u8> =  vec![0; data_length as usize];
             reader.read_exact(&mut data).expect("Failed to read chunk data");
 
             reader.read_exact(&mut buffer).expect("Failed to read crc");
             let crc = u32::from_be_bytes(buffer);
 
-            Ok(Self { length, chunk_type, data, crc })
+            Ok(Self { length: data_length, chunk_type, data, crc })
         }
     }
 
