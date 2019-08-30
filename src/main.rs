@@ -17,8 +17,7 @@ fn main() -> Result<()> {
 
     match args {
         PngMeArgs::Encode{file, chunk, message, .. } => {
-            let mut bytes = fs::read(file).unwrap();
-            let mut png = Png::from_bytes(&bytes).unwrap();
+            let mut png = Png::from_file(&file).unwrap();
 
             let chunk_type = ChunkType::from_str(&chunk).unwrap();
             let data = message.into_bytes();
@@ -32,8 +31,7 @@ fn main() -> Result<()> {
             println!("Wrote message to: {}", file_name);
         },
         PngMeArgs::Decode{file, chunk} => {
-            let mut bytes = fs::read(file).unwrap();
-            let mut png = Png::from_bytes(&bytes).unwrap();
+            let mut png = Png::from_file(&file).unwrap();
 
             match png.chunk_by_type(&chunk) {
                 Some(message_chunk) => {
@@ -44,8 +42,7 @@ fn main() -> Result<()> {
             }
         },
         PngMeArgs::Remove{file, chunk} => {
-            let bytes = fs::read(&file).unwrap();
-            let mut png = Png::from_bytes(&bytes).unwrap();
+            let mut png = Png::from_file(&file).unwrap();
 
             png.remove_chunk(&chunk)?;
             

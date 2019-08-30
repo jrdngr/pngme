@@ -1,5 +1,7 @@
 use std::fmt;
+use std::fs;
 use std::io::{Read, BufReader};
+use std::path::Path;
 
 use crate::{Error, Result};
 
@@ -33,6 +35,11 @@ impl Png {
             header,
             chunks,
         })
+    }
+
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let bytes = fs::read(path).unwrap();
+        Ok(Self::from_bytes(&bytes)?)
     }
 
     pub fn insert_chunk(&mut self, chunk: Chunk) {
