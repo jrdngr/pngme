@@ -1,8 +1,11 @@
 use std::fmt;
 
-use crate::Error;
+use crate::{Error, Result};
+use crate::utils::{four_bytes, u32_from_slice_range};
 
-pub type Png = Vec<Chunk>;
+pub struct Png {
+    chunk: Vec<Chunk>,
+}
 
 #[derive(Debug, Clone)]
 pub struct Chunk {
@@ -19,6 +22,22 @@ impl Chunk {
             chunk_type,
             data,
             crc,
+        }
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() < 12 {
+            Err(Error::new("Invalid chunk"))
+        } else {
+            let length = u32_from_slice_range(bytes, 0..4)?;
+            let chunk_type = ChunkType::from_bytes(four_bytes(bytes, 5..8)?);
+            let data = bytes[8..length as usize].to_vec();
+
+            let crc_start = 8 + length as usize;
+            let crc_end = crc_start + 4;
+            let crc = u32_from_slice_range(bytes, crc_start..crc_end)?;
+
+            Ok(Self { length, chunk_type, data, crc })
         }
     }
 
@@ -61,7 +80,7 @@ impl ChunkType {
         Self { bytes }
     }
 
-    pub fn from_str(s: &str) -> Result<Self, Error> {
+    pub fn from_str(s: &str) -> Result<Self> {
         let bytes = s.as_bytes();
         if bytes.len() == 4 && s.is_ascii() {
             Ok(Self::from_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))

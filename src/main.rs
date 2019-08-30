@@ -6,10 +6,11 @@ mod png;
 mod encode;
 mod decode;
 mod remove;
+mod utils;
 
-use crate::error::Error;
+pub use crate::error::{Error, Result};
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<()> {
     let args = args::PngMeArgs::from_args();
     dbg!(args);
 
