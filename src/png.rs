@@ -34,6 +34,24 @@ impl Png {
             chunks,
         })
     }
+
+    pub fn insert_chunk(&mut self, chunk: Chunk) {
+        if !self.chunks.is_empty() {
+            let index = self.chunks.len() - 1;
+            self.chunks.insert(index, chunk);
+        }
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        result.extend(&self.header);
+        for chunk in &self.chunks {
+            result.extend(chunk.as_bytes());
+        }
+
+        result
+    }
 }
 
 impl fmt::Display for Png {
@@ -56,7 +74,11 @@ pub struct Chunk {
 
 impl Chunk {
     pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
-        let crc_data: Vec<u8> = chunk_type.bytes().iter().cloned().chain(data.iter().cloned()).collect();
+        let crc_data: Vec<u8> = chunk_type.bytes()
+            .iter()
+            .cloned()
+            .chain(data.iter().cloned())
+            .collect();
         let crc = crc::crc32::checksum_ieee(&crc_data);
 
         Self {
@@ -101,6 +123,16 @@ impl Chunk {
 
     pub fn crc(&self) -> u32 {
         self.crc
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.length.to_be_bytes()
+            .iter()
+            .cloned()
+            .chain(self.chunk_type().bytes().iter().cloned())
+            .chain(self.data.iter().cloned())
+            .chain(self.crc.to_be_bytes().iter().cloned())
+            .collect()
     }
 }
 
