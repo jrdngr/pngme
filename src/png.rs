@@ -42,6 +42,24 @@ impl Png {
         }
     }
 
+    pub fn chunks(&self) -> &[Chunk] {
+        &self.chunks
+    }
+
+    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
+        match ChunkType::from_str(chunk_type) {
+            Ok(chunk_type) => {
+                for chunk in &self.chunks {
+                    if chunk.chunk_type == chunk_type {
+                        return Some(&chunk);
+                    }
+                }
+                None
+            },
+            Err(e) => None,
+        }
+    }
+
     pub fn as_bytes(&self) -> Vec<u8> {
         let mut result = Vec::new();
 

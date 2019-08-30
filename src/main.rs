@@ -18,20 +18,35 @@ use crate::png::{Png, Chunk, ChunkType};
 fn main() -> Result<()> {
     let args = PngMeArgs::from_args();
 
-    if let PngMeArgs::Encode{file, chunk, message, .. } = args {
-        let mut bytes = fs::read(file).unwrap();
-        let mut png = Png::from_bytes(&bytes).unwrap();
-        println!("{}", png);
+    match args {
+        PngMeArgs::Encode{file, chunk, message, .. } => {
+            let mut bytes = fs::read(file).unwrap();
+            let mut png = Png::from_bytes(&bytes).unwrap();
 
-        let chunk_type = ChunkType::from_str(&chunk).unwrap();
-        let data = message.into_bytes();
+            let chunk_type = ChunkType::from_str(&chunk).unwrap();
+            let data = message.into_bytes();
 
-        png.insert_chunk(Chunk::new(chunk_type, data));
+            png.insert_chunk(Chunk::new(chunk_type, data));
 
-        println!("{}", png);
+            let file_name = "out.png";
+            let mut result_file = fs::File::create(file_name).unwrap();
+            result_file.write_all(&png.as_bytes()).unwrap();
 
-        let mut result_file = fs::File::create("out.png").unwrap();
-        result_file.write_all(&png.as_bytes()).unwrap();
+            println!("Wrote message to: {}", file_name);
+        },
+        PngMeArgs::Decode{file, chunk} => {
+            let mut bytes = fs::read(file).unwrap();
+            let mut png = Png::from_bytes(&bytes).unwrap();
+
+            match png.chunk_by_type(&chunk) {
+                Some(message_chunk) => {
+                    let message = std::str::from_utf8(message_chunk.data()).unwrap();
+                    println!("{}", message);
+                },
+                None => println!("Error: No chunk of type {}", chunk),
+            }
+        },
+        PngMeArgs::Remove{file, chunk} => {},
     }
 
     Ok(())
