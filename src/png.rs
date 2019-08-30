@@ -43,7 +43,21 @@ impl Png {
     }
 
     pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk> {
-        unimplemented!()
+        let chunk_type = ChunkType::from_str(chunk_type)?;
+        let mut target_index: Option<usize> = None;
+        for (index, chunk) in self.chunks.iter().enumerate() {
+            if chunk.chunk_type == chunk_type {
+                target_index = Some(index);
+                break;
+            }
+        }
+
+        match target_index {
+            Some(index) => {
+                Ok(self.chunks.remove(index))
+            },
+            None => Err(Error::new("Chunk not found"))
+        }
     }
 
     pub fn chunks(&self) -> &[Chunk] {

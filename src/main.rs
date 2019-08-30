@@ -43,7 +43,17 @@ fn main() -> Result<()> {
                 None => println!("Error: No chunk of type {}", chunk),
             }
         },
-        PngMeArgs::Remove{file, chunk} => {},
+        PngMeArgs::Remove{file, chunk} => {
+            let mut bytes = fs::read(&file).unwrap();
+            let mut png = Png::from_bytes(&bytes).unwrap();
+
+            png.remove_chunk(&chunk)?;
+            
+            let mut result_file = fs::File::open(&file).unwrap();
+            result_file.write_all(&png.as_bytes()).unwrap();
+
+            println!("Removed message from: {:?}", file);
+        },
     }
 
     Ok(())
