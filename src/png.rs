@@ -2,6 +2,7 @@ use std::fmt;
 use std::fs;
 use std::io::{Read, BufReader};
 use std::path::Path;
+use std::str::FromStr;
 
 use crate::{Error, Result};
 
@@ -81,7 +82,7 @@ impl Png {
                 }
                 None
             },
-            Err(e) => None,
+            Err(_) => None,
         }
     }
 
@@ -201,15 +202,6 @@ impl ChunkType {
         Self { bytes }
     }
 
-    pub fn from_str(s: &str) -> Result<Self> {
-        let bytes = s.as_bytes();
-        if bytes.len() == 4 && s.is_ascii() {
-            Ok(Self::from_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
-        } else {
-            Err(Error::new("String must be 4 ASCII bytes"))
-        }
-    }
-
     pub fn bytes(&self) -> &[u8] {
         &self.bytes
     }
@@ -234,6 +226,19 @@ impl ChunkType {
 impl fmt::Display for ChunkType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This should already be validated as ASCII"))
+    }
+}
+
+impl FromStr for ChunkType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let bytes = s.as_bytes();
+        if bytes.len() == 4 && s.is_ascii() {
+            Ok(Self::from_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+        } else {
+            Err(Error::new("String must be 4 ASCII bytes"))
+        }
     }
 }
 

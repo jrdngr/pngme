@@ -2,8 +2,8 @@ use structopt::StructOpt;
 
 mod args;
 mod error;
-mod png;
 mod commands;
+pub mod png;
 
 pub use crate::error::{Error, Result};
 

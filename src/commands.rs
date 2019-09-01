@@ -1,5 +1,6 @@
 use std::fs;
-use std::io::Write;
+use std::str::FromStr;
+// use std::io::Write;
 
 use crate::error::Result;
 use crate::args::{EncodeArgs, DecodeArgs, RemoveArgs, PrintArgs};
@@ -26,7 +27,7 @@ pub fn encode(args: EncodeArgs) -> Result<()> {
 }
 
 pub fn decode(args: DecodeArgs) -> Result<()> {
-    let mut png = Png::from_file(&args.file)?;
+    let png = Png::from_file(&args.file)?;
 
     match png.chunk_by_type(&args.chunk) {
         Some(message_chunk) => {
