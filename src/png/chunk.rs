@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 use std::fmt;
-use std::io::{Read, BufReader};
+use std::io::{BufReader, Read};
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
@@ -13,7 +13,8 @@ pub struct Chunk {
 
 impl Chunk {
     pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
-        let crc_data: Vec<u8> = chunk_type.bytes()
+        let crc_data: Vec<u8> = chunk_type
+            .bytes()
             .iter()
             .cloned()
             .chain(data.iter().cloned())
@@ -38,13 +39,18 @@ impl Chunk {
             reader.read_exact(&mut buffer)?;
             let chunk_type = ChunkType::try_from(buffer)?;
 
-            let mut data: Vec<u8> =  vec![0; data_length as usize];
+            let mut data: Vec<u8> = vec![0; data_length as usize];
             reader.read_exact(&mut data)?;
 
             reader.read_exact(&mut buffer)?;
             let crc = u32::from_be_bytes(buffer);
 
-            Ok(Self { length: data_length, chunk_type, data, crc })
+            Ok(Self {
+                length: data_length,
+                chunk_type,
+                data,
+                crc,
+            })
         }
     }
 
@@ -65,7 +71,8 @@ impl Chunk {
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
-        self.length.to_be_bytes()
+        self.length
+            .to_be_bytes()
             .iter()
             .cloned()
             .chain(self.chunk_type().bytes().iter().cloned())
@@ -77,12 +84,12 @@ impl Chunk {
 
 impl fmt::Display for Chunk {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Chunk {{", )?;
+        writeln!(f, "Chunk {{",)?;
         writeln!(f, "  Length: {}", self.length)?;
         writeln!(f, "  Type: {}", self.chunk_type)?;
         writeln!(f, "  Data: {} bytes", self.data.len())?;
         writeln!(f, "  Crc: {}", self.crc)?;
-        writeln!(f, "}}", )?;
+        writeln!(f, "}}",)?;
         Ok(())
     }
 }
@@ -113,29 +120,36 @@ impl ChunkType {
         self.bytes[3].is_ascii_lowercase()
     }
 
+    #[rustfmt::skip]
     pub fn is_valid_byte(byte: u8) -> bool {
         (byte >= 65 && byte <= 90) ||
-        (byte >=97 || byte <= 122)
+        (byte >= 97 || byte <= 122)
     }
 }
 
 impl TryFrom<[u8; 4]> for ChunkType {
     type Error = anyhow::Error;
-    
+
     fn try_from(bytes: [u8; 4]) -> anyhow::Result<Self> {
         for byte in bytes.iter() {
             if !ChunkType::is_valid_byte(*byte) {
-                anyhow::bail!("Invalid byte {}. Valid bytes are ASCII A-Z and a-z, or 65-90 and 97-122");
+                anyhow::bail!(
+                    "Invalid byte {}. Valid bytes are ASCII A-Z and a-z, or 65-90 and 97-122"
+                );
             }
         }
 
-        Ok(Self { bytes } )
+        Ok(Self { bytes })
     }
 }
 
 impl fmt::Display for ChunkType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This is already validated as ASCII"))
+        write!(
+            f,
+            "{}",
+            std::str::from_utf8(&self.bytes).expect("This is already validated as ASCII")
+        )
     }
 }
 

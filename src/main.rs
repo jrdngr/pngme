@@ -5,7 +5,7 @@ mod commands;
 pub mod png;
 
 use crate::args::PngMeArgs;
-use crate::commands::{encode, decode, remove, print_chunks};
+use crate::commands::{decode, encode, print_chunks, remove};
 
 fn main() -> anyhow::Result<()> {
     let args = PngMeArgs::parse();

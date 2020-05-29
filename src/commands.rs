@@ -1,8 +1,8 @@
 use std::fs;
 use std::str::FromStr;
 
-use crate::args::{EncodeArgs, DecodeArgs, RemoveArgs, PrintArgs};
-use crate::png::{Png, Chunk, ChunkType};
+use crate::args::{DecodeArgs, EncodeArgs, PrintArgs, RemoveArgs};
+use crate::png::{Chunk, ChunkType, Png};
 
 pub fn encode(args: EncodeArgs) -> anyhow::Result<()> {
     let mut png = Png::from_file(&args.file)?;
@@ -31,7 +31,7 @@ pub fn decode(args: DecodeArgs) -> anyhow::Result<()> {
         Some(message_chunk) => {
             let message = std::str::from_utf8(message_chunk.data())?;
             println!("{}", message);
-        },
+        }
         None => println!("Error: No chunk of type {}", &args.chunk),
     }
 

@@ -2,7 +2,7 @@ pub mod chunk;
 
 use std::fmt;
 use std::fs;
-use std::io::{Read, BufReader};
+use std::io::{BufReader, Read};
 use std::path::Path;
 use std::str::FromStr;
 
@@ -29,15 +29,12 @@ impl Png {
             let chunk_length = (length + 8) as usize;
             let mut chunk_data: Vec<u8> = vec![0; chunk_length];
             reader.read_exact(&mut chunk_data)?;
-            
+
             let chunk = Chunk::from_bytes(length, &chunk_data)?;
             chunks.push(chunk);
         }
 
-        Ok(Self {
-            header,
-            chunks,
-        })
+        Ok(Self { header, chunks })
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> anyhow::Result<Self> {
@@ -63,10 +60,8 @@ impl Png {
         }
 
         match target_index {
-            Some(index) => {
-                Ok(self.chunks.remove(index))
-            },
-            None => anyhow::bail!("Chunk not found")
+            Some(index) => Ok(self.chunks.remove(index)),
+            None => anyhow::bail!("Chunk not found"),
         }
     }
 
@@ -83,7 +78,7 @@ impl Png {
                     }
                 }
                 None
-            },
+            }
             Err(_) => None,
         }
     }
