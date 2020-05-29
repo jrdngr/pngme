@@ -1,12 +1,10 @@
 use std::fs;
 use std::str::FromStr;
-// use std::io::Write;
 
-use crate::error::Result;
 use crate::args::{EncodeArgs, DecodeArgs, RemoveArgs, PrintArgs};
 use crate::png::{Png, Chunk, ChunkType};
 
-pub fn encode(args: EncodeArgs) -> Result<()> {
+pub fn encode(args: EncodeArgs) -> anyhow::Result<()> {
     let mut png = Png::from_file(&args.file)?;
 
     let chunk_type = ChunkType::from_str(&args.chunk)?;
@@ -26,7 +24,7 @@ pub fn encode(args: EncodeArgs) -> Result<()> {
     Ok(())
 }
 
-pub fn decode(args: DecodeArgs) -> Result<()> {
+pub fn decode(args: DecodeArgs) -> anyhow::Result<()> {
     let png = Png::from_file(&args.file)?;
 
     match png.chunk_by_type(&args.chunk) {
@@ -40,7 +38,7 @@ pub fn decode(args: DecodeArgs) -> Result<()> {
     Ok(())
 }
 
-pub fn remove(args: RemoveArgs) -> Result<()> {
+pub fn remove(args: RemoveArgs) -> anyhow::Result<()> {
     let mut png = Png::from_file(&args.file)?;
     png.remove_chunk(&args.chunk)?;
     fs::write(&args.file, &png.as_bytes())?;
@@ -49,7 +47,7 @@ pub fn remove(args: RemoveArgs) -> Result<()> {
     Ok(())
 }
 
-pub fn print_chunks(args: PrintArgs) -> Result<()> {
+pub fn print_chunks(args: PrintArgs) -> anyhow::Result<()> {
     let bytes = fs::read(&args.file)?;
     let png = Png::from_bytes(&bytes)?;
     println!("{}", png);

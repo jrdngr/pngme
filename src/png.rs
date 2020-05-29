@@ -4,8 +4,6 @@ use std::io::{Read, BufReader};
 use std::path::Path;
 use std::str::FromStr;
 
-use crate::{Error, Result};
-
 #[derive(Debug)]
 pub struct Png {
     header: [u8; 8],
@@ -13,7 +11,7 @@ pub struct Png {
 }
 
 impl Png {
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> anyhow::Result<Self> {
         let mut reader = BufReader::new(bytes);
         let mut header: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
         let mut chunks = Vec::new();
@@ -38,7 +36,7 @@ impl Png {
         })
     }
 
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
+    pub fn from_file<P: AsRef<Path>>(path: P) -> anyhow::Result<Self> {
         let bytes = fs::read(path)?;
         Ok(Self::from_bytes(&bytes)?)
     }
@@ -50,7 +48,7 @@ impl Png {
         }
     }
 
-    pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk> {
+    pub fn remove_chunk(&mut self, chunk_type: &str) -> anyhow::Result<Chunk> {
         let chunk_type = ChunkType::from_str(chunk_type)?;
         let mut target_index: Option<usize> = None;
         for (index, chunk) in self.chunks.iter().enumerate() {
@@ -64,7 +62,7 @@ impl Png {
             Some(index) => {
                 Ok(self.chunks.remove(index))
             },
-            None => Err(Error::new("Chunk not found"))
+            None => anyhow::bail!("Chunk not found")
         }
     }
 
@@ -133,9 +131,9 @@ impl Chunk {
         }
     }
 
-    pub fn from_bytes(data_length: u32, bytes: &[u8]) -> Result<Self> {
+    pub fn from_bytes(data_length: u32, bytes: &[u8]) -> anyhow::Result<Self> {
         if bytes.len() < 8 {
-            Err(Error::new("Invalid chunk"))
+            anyhow::bail!("Invalid chunk")
         } else {
             let mut reader = BufReader::new(bytes);
             let mut buffer: [u8; 4] = [0, 0, 0, 0];
@@ -230,14 +228,14 @@ impl fmt::Display for ChunkType {
 }
 
 impl FromStr for ChunkType {
-    type Err = Error;
+    type Err = anyhow::Error;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> anyhow::Result<Self> {
         let bytes = s.as_bytes();
         if bytes.len() == 4 && s.is_ascii() {
             Ok(Self::from_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
         } else {
-            Err(Error::new("String must be 4 ASCII bytes"))
+            anyhow::bail!("String must be 4 ASCII bytes")
         }
     }
 }
