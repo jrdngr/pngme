@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::fmt;
 use std::io::{Read, BufReader};
 use std::str::FromStr;
@@ -35,7 +36,7 @@ impl Chunk {
             let mut buffer: [u8; 4] = [0, 0, 0, 0];
 
             reader.read_exact(&mut buffer)?;
-            let chunk_type = ChunkType::from_bytes(buffer);
+            let chunk_type = ChunkType::try_from(buffer)?;
 
             let mut data: Vec<u8> =  vec![0; data_length as usize];
             reader.read_exact(&mut data)?;
@@ -92,10 +93,6 @@ pub struct ChunkType {
 }
 
 impl ChunkType {
-    pub fn from_bytes(bytes: [u8; 4]) -> Self {
-        Self { bytes }
-    }
-
     pub fn bytes(&self) -> &[u8] {
         &self.bytes
     }
@@ -115,11 +112,30 @@ impl ChunkType {
     pub fn is_safe_to_copy(&self) -> bool {
         self.bytes[3].is_ascii_lowercase()
     }
+
+    pub fn is_valid_byte(byte: u8) -> bool {
+        (byte >= 65 && byte <= 90) ||
+        (byte >=97 || byte <= 122)
+    }
+}
+
+impl TryFrom<[u8; 4]> for ChunkType {
+    type Error = anyhow::Error;
+    
+    fn try_from(bytes: [u8; 4]) -> anyhow::Result<Self> {
+        for byte in bytes.iter() {
+            if !ChunkType::is_valid_byte(*byte) {
+                anyhow::bail!("Invalid byte {}. Valid bytes are ASCII A-Z and a-z, or 65-90 and 97-122");
+            }
+        }
+
+        Ok(Self { bytes } )
+    }
 }
 
 impl fmt::Display for ChunkType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This should already be validated as ASCII"))
+        write!(f, "{}", std::str::from_utf8(&self.bytes).expect("This is already validated as ASCII"))
     }
 }
 
@@ -129,7 +145,7 @@ impl FromStr for ChunkType {
     fn from_str(s: &str) -> anyhow::Result<Self> {
         let bytes = s.as_bytes();
         if bytes.len() == 4 && s.is_ascii() {
-            Ok(Self::from_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
+            Ok(Self::try_from([bytes[0], bytes[1], bytes[2], bytes[3]])?)
         } else {
             anyhow::bail!("String must be 4 ASCII bytes")
         }
@@ -141,7 +157,7 @@ mod tests {
     use super::*;
 
     fn test_type() -> ChunkType {
-        ChunkType::from_bytes([82, 117, 83, 116])
+        ChunkType::try_from([82, 117, 83, 116]).unwrap()
     }
 
     #[test]
