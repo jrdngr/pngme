@@ -96,11 +96,19 @@ impl TryFrom<&[u8]> for Png {
         while let Ok(()) = reader.read_exact(&mut length_buffer) {
             let length = u32::from_be_bytes(length_buffer);
 
+            // Data length + 4 byte chunk type + 4 byte crc
             let chunk_length = (length + 8) as usize;
+            
             let mut chunk_data: Vec<u8> = vec![0; chunk_length];
             reader.read_exact(&mut chunk_data)?;
 
-            let chunk = Chunk::try_from(chunk_data.as_ref())?;
+            let chunk_bytes: Vec<u8> = length_buffer
+                .iter()
+                .copied()
+                .chain(chunk_data.into_iter())
+                .collect();
+
+            let chunk = Chunk::try_from(chunk_bytes.as_ref())?;
             chunks.push(chunk);
         }
 
