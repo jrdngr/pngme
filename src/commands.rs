@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::fs;
 use std::str::FromStr;
 
@@ -49,7 +50,7 @@ pub fn remove(args: RemoveArgs) -> anyhow::Result<()> {
 
 pub fn print_chunks(args: PrintArgs) -> anyhow::Result<()> {
     let bytes = fs::read(&args.file)?;
-    let png = Png::from_bytes(&bytes)?;
+    let png = Png::try_from(bytes.as_ref())?;
     println!("{}", png);
 
     Ok(())

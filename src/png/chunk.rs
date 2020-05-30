@@ -24,6 +24,15 @@ impl Chunk {
         }
     }
 
+    pub fn from_strings(chunk_type: &str, data: &str) -> anyhow::Result<Self> {
+        use std::str::FromStr;
+
+        let chunk_type = ChunkType::from_str(chunk_type)?;
+        let data: Vec<u8> = data.bytes().collect();
+
+        Ok(Chunk::new(chunk_type, data))
+    }
+
     pub fn length(&self) -> u32 {
         self.length
     }
@@ -52,7 +61,7 @@ impl Chunk {
         self.length
             .to_be_bytes()
             .iter()
-            .cloned()
+            .copied()
             .chain(self.chunk_type().bytes().iter().cloned())
             .chain(self.data.iter().cloned())
             .chain(self.crc.to_be_bytes().iter().cloned())

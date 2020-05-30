@@ -51,7 +51,8 @@ impl TryFrom<[u8; 4]> for ChunkType {
         for byte in bytes.iter() {
             if !ChunkType::is_valid_byte(*byte) {
                 anyhow::bail!(
-                    "Invalid byte {}. Valid bytes are ASCII A-Z and a-z, or 65-90 and 97-122"
+                    "Invalid byte {}. Valid bytes are ASCII A-Z and a-z, or 65-90 and 97-122",
+                    *byte
                 );
             }
         }
