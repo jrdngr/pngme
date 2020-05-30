@@ -98,7 +98,7 @@ impl TryFrom<&[u8]> for Png {
 
             // Data length + 4 byte chunk type + 4 byte crc
             let chunk_length = (length + 8) as usize;
-            
+
             let mut chunk_data: Vec<u8> = vec![0; chunk_length];
             reader.read_exact(&mut chunk_data)?;
 
@@ -154,7 +154,7 @@ mod tests {
             .collect();
 
         let png = Png::try_from(bytes.as_ref());
-        
+
         assert!(png.is_ok());
     }
 
@@ -165,14 +165,14 @@ mod tests {
             .flat_map(|chunk| chunk.as_bytes())
             .collect();
 
-        let bytes: Vec<u8> =[13, 80, 78, 71, 13, 10, 26, 10]
+        let bytes: Vec<u8> = [13, 80, 78, 71, 13, 10, 26, 10]
             .iter()
             .chain(chunk_bytes.iter())
             .copied()
             .collect();
 
         let png = Png::try_from(bytes.as_ref());
-        
+
         assert!(png.is_err());
     }
 
@@ -192,9 +192,9 @@ mod tests {
         ];
 
         chunk_bytes.append(&mut bad_chunk);
-        
+
         let png = Png::try_from(chunk_bytes.as_ref());
-        
+
         assert!(png.is_err());
     }
 }

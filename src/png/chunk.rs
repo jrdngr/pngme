@@ -130,13 +130,15 @@ impl fmt::Display for Chunk {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     use std::str::FromStr;
 
     fn testing_chunk() -> Chunk {
         let chunk_type = ChunkType::from_str("RuSt").unwrap();
-        let data: Vec<u8> = "This is where your secret message will be!".bytes().collect();
+        let data: Vec<u8> = "This is where your secret message will be!"
+            .bytes()
+            .collect();
         Chunk::new(chunk_type, data)
     }
 
@@ -172,7 +174,7 @@ mod tests{
         let chunk_type = "RuSt".as_bytes();
         let message_bytes = "This is where your secret message will be!".as_bytes();
         let crc: u32 = 2882656334;
-        
+
         let chunk_data: Vec<u8> = data_length
             .to_be_bytes()
             .iter()
@@ -199,7 +201,7 @@ mod tests{
         let chunk_type = "RuSt".as_bytes();
         let message_bytes = "This is where your secret message will be!".as_bytes();
         let crc: u32 = 2882656333;
-        
+
         let chunk_data: Vec<u8> = data_length
             .to_be_bytes()
             .iter()

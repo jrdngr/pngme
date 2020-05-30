@@ -76,7 +76,7 @@ impl FromStr for ChunkType {
 
     fn from_str(s: &str) -> anyhow::Result<Self> {
         let bytes = s.as_bytes();
-        
+
         if bytes.len() == 4 && s.is_ascii() {
             Ok(Self::try_from([bytes[0], bytes[1], bytes[2], bytes[3]])?)
         } else {
@@ -166,13 +166,11 @@ mod tests {
         let chunk = ChunkType::from_str("Ru1t");
         assert!(chunk.is_err());
 
-
         let bytes = "Rust".as_bytes();
         let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
         let chunk = ChunkType { bytes };
         assert!(!chunk.is_valid());
 
-        
         let bytes = "Ru1t".as_bytes();
         let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
         let chunk = ChunkType { bytes };
