@@ -1,6 +1,7 @@
 pub mod chunk;
 pub mod chunk_type;
 
+use std::convert::TryFrom;
 use std::fmt;
 use std::fs;
 use std::io::{BufReader, Read};
@@ -32,7 +33,7 @@ impl Png {
             let mut chunk_data: Vec<u8> = vec![0; chunk_length];
             reader.read_exact(&mut chunk_data)?;
 
-            let chunk = Chunk::from_bytes(length, &chunk_data)?;
+            let chunk = Chunk::try_from(chunk_data.as_ref())?;
             chunks.push(chunk);
         }
 
