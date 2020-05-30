@@ -1,4 +1,5 @@
 pub mod chunk;
+pub mod chunk_type;
 
 use std::fmt;
 use std::fs;
@@ -6,7 +7,8 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 use std::str::FromStr;
 
-pub use chunk::{Chunk, ChunkType};
+pub use chunk::Chunk;
+pub use chunk_type::ChunkType;
 
 #[derive(Debug)]
 pub struct Png {
