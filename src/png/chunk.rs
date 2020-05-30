@@ -112,7 +112,7 @@ impl ChunkType {
         self.bytes[1].is_ascii_uppercase()
     }
 
-    pub fn is_valid(&self) -> bool {
+    pub fn is_reserved_bit_valid(&self) -> bool {
         self.bytes[2].is_ascii_uppercase()
     }
 
@@ -121,9 +121,18 @@ impl ChunkType {
     }
 
     #[rustfmt::skip]
+    pub fn is_valid(&self) -> bool {
+        self.is_reserved_bit_valid() &&
+        ChunkType::is_valid_byte(self.bytes[0]) &&
+        ChunkType::is_valid_byte(self.bytes[1]) &&
+        ChunkType::is_valid_byte(self.bytes[2]) &&
+        ChunkType::is_valid_byte(self.bytes[3])
+    }
+
+    #[rustfmt::skip]
     pub fn is_valid_byte(byte: u8) -> bool {
         (byte >= 65 && byte <= 90) ||
-        (byte >= 97 || byte <= 122)
+        (byte >= 97 && byte <= 122)
     }
 }
 
@@ -158,6 +167,7 @@ impl FromStr for ChunkType {
 
     fn from_str(s: &str) -> anyhow::Result<Self> {
         let bytes = s.as_bytes();
+        
         if bytes.len() == 4 && s.is_ascii() {
             Ok(Self::try_from([bytes[0], bytes[1], bytes[2], bytes[3]])?)
         } else {
@@ -170,43 +180,99 @@ impl FromStr for ChunkType {
 mod tests {
     use super::*;
 
-    fn test_type() -> ChunkType {
-        ChunkType::try_from([82, 117, 83, 116]).unwrap()
-    }
-
     #[test]
     pub fn test_chunk_type_from_bytes() {
-        assert_eq!(test_type().bytes(), &[82, 117, 83, 116]);
+        let expected = &[82, 117, 83, 116];
+        let actual = ChunkType::try_from([82, 117, 83, 116]).unwrap();
+
+        assert_eq!(expected, actual.bytes());
     }
 
     #[test]
     pub fn test_chunk_type_from_str() {
-        let chunk = ChunkType::from_str("RuSt").unwrap();
-        assert_eq!(chunk, test_type());
+        let expected = ChunkType::try_from([82, 117, 83, 116]).unwrap();
+        let actual = ChunkType::from_str("RuSt").unwrap();
+        assert_eq!(expected, actual);
     }
 
     #[test]
     pub fn test_chunk_type_is_critical() {
-        assert!(test_type().is_critical());
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert!(chunk.is_critical());
+    }
+
+    #[test]
+    pub fn test_chunk_type_is_not_critical() {
+        let chunk = ChunkType::from_str("ruSt").unwrap();
+        assert!(!chunk.is_critical());
     }
 
     #[test]
     pub fn test_chunk_type_is_public() {
-        assert!(!test_type().is_public());
+        let chunk = ChunkType::from_str("RUSt").unwrap();
+        assert!(chunk.is_public());
     }
 
     #[test]
-    pub fn test_chunk_type_is_valid() {
-        assert!(test_type().is_valid());
+    pub fn test_chunk_type_is_not_public() {
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert!(!chunk.is_public());
+    }
+
+    #[test]
+    pub fn test_chunk_type_is_reserved_bit_valid() {
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert!(chunk.is_reserved_bit_valid());
+    }
+
+    #[test]
+    pub fn test_chunk_type_is_reserved_bit_invalid() {
+        let chunk = ChunkType::from_str("Rust").unwrap();
+        assert!(!chunk.is_reserved_bit_valid());
     }
 
     #[test]
     pub fn test_chunk_type_is_safe_to_copy() {
-        assert!(test_type().is_safe_to_copy());
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert!(chunk.is_safe_to_copy());
+    }
+
+    #[test]
+    pub fn test_chunk_type_is_unsafe_to_copy() {
+        let chunk = ChunkType::from_str("RuST").unwrap();
+        assert!(!chunk.is_safe_to_copy());
+    }
+
+    #[test]
+    pub fn test_valid_chunk_is_valid() {
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert!(chunk.is_valid());
+    }
+
+    #[test]
+    pub fn test_invalid_chunk_is_valid() {
+        let chunk = ChunkType::from_str("Rust").unwrap();
+        assert!(!chunk.is_valid());
+
+        let chunk = ChunkType::from_str("Ru1t");
+        assert!(chunk.is_err());
+
+
+        let bytes = "Rust".as_bytes();
+        let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
+        let chunk = ChunkType { bytes };
+        assert!(!chunk.is_valid());
+
+        
+        let bytes = "Ru1t".as_bytes();
+        let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
+        let chunk = ChunkType { bytes };
+        assert!(!chunk.is_valid());
     }
 
     #[test]
     pub fn test_chunk_type_string() {
-        assert_eq!(&test_type().to_string(), "RuSt");
+        let chunk = ChunkType::from_str("RuSt").unwrap();
+        assert_eq!(&chunk.to_string(), "RuSt");
     }
 }
