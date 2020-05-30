@@ -175,4 +175,26 @@ mod tests {
         
         assert!(png.is_err());
     }
+
+    #[test]
+    fn test_invalid_chunk() {
+        let mut chunk_bytes: Vec<u8> = testing_chunks()
+            .into_iter()
+            .flat_map(|chunk| chunk.as_bytes())
+            .collect();
+
+        #[rustfmt::skip]
+        let mut bad_chunk = vec![
+            0, 0, 0, 5,         // length
+            32, 117, 83, 116,   // Chunk Type (bad)
+            65, 64, 65, 66, 67, // Data
+            1, 2, 3, 4, 5       // CRC (bad)
+        ];
+
+        chunk_bytes.append(&mut bad_chunk);
+        
+        let png = Png::try_from(chunk_bytes.as_ref());
+        
+        assert!(png.is_err());
+    }
 }
