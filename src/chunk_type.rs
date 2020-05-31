@@ -2,32 +2,42 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
+/// A validated PNG chunk type. See the PNG spec for more details.
+/// http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChunkType {
     bytes: [u8; 4],
 }
 
 impl ChunkType {
-    pub fn bytes(&self) -> &[u8] {
+    /// Returns the raw bytes contained in this chunk
+    pub fn bytes(&self) -> &[u8; 4] {
         &self.bytes
     }
 
+    /// Returns the property state of the first byte as described in the PNG spec
     pub fn is_critical(&self) -> bool {
         self.bytes[0].is_ascii_uppercase()
     }
 
+    /// Returns the property state of the second byte as described in the PNG spec
     pub fn is_public(&self) -> bool {
         self.bytes[1].is_ascii_uppercase()
     }
 
+    /// Returns the property state of the third byte as described in the PNG spec
     pub fn is_reserved_bit_valid(&self) -> bool {
         self.bytes[2].is_ascii_uppercase()
     }
 
+    /// Returns the property state of the fourth byte as described in the PNG spec
     pub fn is_safe_to_copy(&self) -> bool {
         self.bytes[3].is_ascii_lowercase()
     }
 
+    /// Returns true if the reserved byte is valid and all four bytes are represented
+    /// by the characters A-Z or a-z.
+    /// Note that this chunk type should always be valid as it is validated during construction.
     #[rustfmt::skip]
     pub fn is_valid(&self) -> bool {
         self.is_reserved_bit_valid() &&
@@ -37,6 +47,7 @@ impl ChunkType {
         ChunkType::is_valid_byte(self.bytes[3])
     }
 
+    /// Valid bytes are represented by the characters A-Z or a-z
     #[rustfmt::skip]
     pub fn is_valid_byte(byte: u8) -> bool {
         (byte >= 65 && byte <= 90) ||

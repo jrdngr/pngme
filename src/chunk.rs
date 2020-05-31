@@ -4,12 +4,14 @@ use std::io::{BufReader, Read};
 
 use crate::png::ChunkType;
 
+/// A validated PNG chunk. See the PNG Spec for more details
+/// http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
 #[derive(Debug, Clone)]
 pub struct Chunk {
-    pub length: u32,
-    pub chunk_type: ChunkType,
-    pub data: Vec<u8>,
-    pub crc: u32,
+    length: u32,
+    chunk_type: ChunkType,
+    data: Vec<u8>,
+    crc: u32,
 }
 
 impl Chunk {

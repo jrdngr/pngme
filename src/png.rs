@@ -33,7 +33,7 @@ impl Png {
         let chunk_type = ChunkType::from_str(chunk_type)?;
         let mut target_index: Option<usize> = None;
         for (index, chunk) in self.chunks.iter().enumerate() {
-            if chunk.chunk_type == chunk_type {
+            if chunk.chunk_type() == &chunk_type {
                 target_index = Some(index);
                 break;
             }
@@ -53,7 +53,7 @@ impl Png {
         match ChunkType::from_str(chunk_type) {
             Ok(chunk_type) => {
                 for chunk in &self.chunks {
-                    if chunk.chunk_type == chunk_type {
+                    if chunk.chunk_type() == &chunk_type {
                         return Some(&chunk);
                     }
                 }
