@@ -3,9 +3,12 @@ use clap::Clap;
 mod args;
 mod commands;
 pub mod png;
+pub mod chunk;
+pub mod chunk_type;
 
-use crate::args::PngMeArgs;
 use crate::commands::{decode, encode, print_chunks, remove};
+pub use crate::args::PngMeArgs;
+pub use png::Png;
 
 fn main() -> anyhow::Result<()> {
     let args = PngMeArgs::parse();
