@@ -28,15 +28,15 @@ impl Chunk {
         }
     }
 
-    /// Since the purpose of this program is to encode messages, it can be useful to 
+    /// Since the purpose of this program is to encode messages, it can be useful to
     /// create new chunks from a pair of strings representing the chunk type and message.
-    /// 
+    ///
     /// # Example
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error> {
     /// let chunk = Chunk::from_strings("RuSt", "This is a secret message!")?;
-    /// 
+    ///
     /// assert_eq!(&chunk.chunk_type().to_string(), "RuSt");
     /// assert_eq!(&chunk.data_as_string()?, "This is a secret message!");
     /// # }
@@ -65,7 +65,7 @@ impl Chunk {
         &self.data
     }
 
-    /// The CRC of this chunk. If this chunk was created with `new` or `from_strings`, 
+    /// The CRC of this chunk. If this chunk was created with `new` or `from_strings`,
     /// the CRC is computed based on the data. If this chunk was created with `TryFrom<&[u8]>`,
     /// the CRC was read from the bytes per the PNG spec and validated against the data
     /// stored in this chunk.
