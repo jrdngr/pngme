@@ -5,6 +5,7 @@ use std::str::FromStr;
 use crate::args::{DecodeArgs, EncodeArgs, PrintArgs, RemoveArgs};
 use crate::png::{Chunk, ChunkType, Png};
 
+/// Encodes a message into a PNG file and saves the result
 pub fn encode(args: EncodeArgs) -> anyhow::Result<()> {
     let mut png = Png::from_file(&args.file)?;
 
@@ -25,6 +26,7 @@ pub fn encode(args: EncodeArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Searches for a message hidden in a PNG file and prints the message if one is found
 pub fn decode(args: DecodeArgs) -> anyhow::Result<()> {
     let png = Png::from_file(&args.file)?;
 
@@ -39,6 +41,7 @@ pub fn decode(args: DecodeArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Removes a chunk from a PNG file and saves the result
 pub fn remove(args: RemoveArgs) -> anyhow::Result<()> {
     let mut png = Png::from_file(&args.file)?;
     png.remove_chunk(&args.chunk)?;
@@ -48,6 +51,7 @@ pub fn remove(args: RemoveArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Prints all of the chunks in a PNG file
 pub fn print_chunks(args: PrintArgs) -> anyhow::Result<()> {
     let bytes = fs::read(&args.file)?;
     let png = Png::try_from(bytes.as_ref())?;
