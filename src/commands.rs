@@ -11,7 +11,7 @@ pub fn encode(args: EncodeArgs) -> anyhow::Result<()> {
     let chunk_type = ChunkType::from_str(&args.chunk)?;
     let data = args.message.into_bytes();
 
-    png.insert_chunk(Chunk::new(chunk_type, data));
+    png.append_chunk(Chunk::new(chunk_type, data));
 
     let file_path = match args.out {
         Some(path) => path,

@@ -8,6 +8,10 @@ use std::str::FromStr;
 pub use crate::chunk::Chunk;
 pub use crate::chunk_type::ChunkType;
 
+/// A PNG container as described by the PNG spec
+/// http://www.libpng.org/pub/png/spec/1.2/PNG-Contents.html
+/// A `Png` struct contains a header with the bytes `[137, 80, 78, 71, 13, 10, 26, 10]`
+/// and a list of `Chunk` structs.
 #[derive(Debug)]
 pub struct Png {
     header: [u8; 8],
@@ -17,18 +21,19 @@ pub struct Png {
 impl Png {
     pub const EXPECTED_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
 
+    /// Creates a `Png` from a file path
     pub fn from_file<P: AsRef<Path>>(path: P) -> anyhow::Result<Self> {
         let bytes = fs::read(path)?;
         Ok(Self::try_from(bytes.as_ref())?)
     }
 
-    pub fn insert_chunk(&mut self, chunk: Chunk) {
-        if !self.chunks.is_empty() {
-            let index = self.chunks.len() - 1;
-            self.chunks.insert(index, chunk);
-        }
+    /// Appends a chunk to the end of this `Png` file's `Chunk` list.
+    pub fn append_chunk(&mut self, chunk: Chunk) {
+        self.chunks.push(chunk);
     }
 
+    /// Searches for a `Chunk` with the specified `chunk_type` and removes the first
+    /// matching `Chunk` from this `Png` list of chunks.
     pub fn remove_chunk(&mut self, chunk_type: &str) -> anyhow::Result<Chunk> {
         let chunk_type = ChunkType::from_str(chunk_type)?;
         let mut target_index: Option<usize> = None;
@@ -45,10 +50,13 @@ impl Png {
         }
     }
 
+    /// Lists the `Chunk`s stored in this `Png`
     pub fn chunks(&self) -> &[Chunk] {
         &self.chunks
     }
 
+    /// Searches for a `Chunk` with the specified `chunk_type` and returns the first
+    /// matching `Chunk` from this `Png` list of chunks.
     pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
         match ChunkType::from_str(chunk_type) {
             Ok(chunk_type) => {
@@ -63,6 +71,8 @@ impl Png {
         }
     }
 
+    /// Returns this `Png` as a byte sequence.
+    /// These bytes will contain the header followed by the bytes of all of the chunks.
     pub fn as_bytes(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
