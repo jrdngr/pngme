@@ -1,13 +1,13 @@
 use clap::Clap;
 
 mod args;
-mod commands;
-pub mod png;
 pub mod chunk;
 pub mod chunk_type;
+mod commands;
+pub mod png;
 
-use crate::commands::{decode, encode, print_chunks, remove};
 pub use crate::args::PngMeArgs;
+use crate::commands::{decode, encode, print_chunks, remove};
 pub use png::Png;
 
 fn main() -> anyhow::Result<()> {
