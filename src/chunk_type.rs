@@ -11,8 +11,8 @@ pub struct ChunkType {
 
 impl ChunkType {
     /// Returns the raw bytes contained in this chunk
-    pub fn bytes(&self) -> &[u8; 4] {
-        &self.bytes
+    pub fn bytes(&self) -> [u8; 4] {
+        self.bytes.clone()
     }
 
     /// Returns the property state of the first byte as described in the PNG spec
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     pub fn test_chunk_type_from_bytes() {
-        let expected = &[82, 117, 83, 116];
+        let expected = [82, 117, 83, 116];
         let actual = ChunkType::try_from([82, 117, 83, 116]).unwrap();
 
         assert_eq!(expected, actual.bytes());
