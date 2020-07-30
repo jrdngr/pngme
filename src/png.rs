@@ -161,6 +161,24 @@ mod tests {
     }
 
     #[test]
+    fn test_png_trait_impls() {
+        let chunk_bytes: Vec<u8> = testing_chunks()
+            .into_iter()
+            .flat_map(|chunk| chunk.as_bytes())
+            .collect();
+
+        let bytes: Vec<u8> = Png::EXPECTED_HEADER
+            .iter()
+            .chain(chunk_bytes.iter())
+            .copied()
+            .collect();
+
+        let png: Png = TryFrom::try_from(bytes.as_ref()).unwrap();
+
+        let _png_string = format!("{}", png);
+    }
+
+    #[test]
     fn test_from_chunks() {
         let chunks = testing_chunks();
         let png = Png::from_chunks(chunks);
